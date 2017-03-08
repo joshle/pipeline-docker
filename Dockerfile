@@ -96,4 +96,8 @@ RUN mkdir $JULIA_PATH \
 
 ENV PATH $JULIA_PATH/bin:$PATH
 
+RUN mkdir -p /tools/bwa
+ENV PATH /tools/bwa:$PATH
+
+CMD ["python2"]
 
