@@ -100,7 +100,7 @@ RUN apt-get update \
 
 RUN pip install --upgrade pyzmq PyDrive google-api-python-client jsonpointer jsonschema tornado sphinx pygments nose readline mistune invoke
 
-pip install pysam
+
 
 # Install julia 0.5
 RUN mkdir -p /opt/julia-0.5.0 && \
@@ -118,11 +118,11 @@ RUN /opt/julia/bin/julia -e 'Pkg.add("IJulia")'
 RUN /opt/julia/bin/julia -e 'Pkg.build("IJulia")'
 
 
-
-
 RUN mkdir -p /tools/bwa
 ENV PATH /tools/bwa:$PATH
 
+
+RUN pip install pysam
 ENTRYPOINT ["/usr/bin/python"]
 
 
