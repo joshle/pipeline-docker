@@ -14,7 +14,7 @@ ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 
 #ENV R_BASE_VERSION 3.2.3
-ENV R_BASE_VERSION 3.3.1
+ENV R_BASE_VERSION 3.3.2
 
 # Install R
 RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu trusty/" >> /etc/apt/sources.list \
@@ -42,36 +42,8 @@ RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu trusty/" >> /etc/apt/sour
 	&& rm -rf /var/lib/apt/lists/*
 
 # install R packages
-RUN Rscript -e 'install.packages("devtools",dependencies=TRUE)' \
-	&&Rscript -e 'install.packages("e1071",dependencies=TRUE)' \
-	&&Rscript -e 'install.packages("Amelia",dependencies=TRUE)' \
-	&&Rscript -e 'install.packages("mixOmics",dependencies=TRUE)' \
-	&&Rscript -e 'install.packages("pls",dependencies=TRUE)' \
-	&&Rscript -e 'install.packages("spls",dependencies=TRUE)' \
-	&&Rscript -e 'install.packages("caret",dependencies=TRUE)' \
-	&&Rscript -e 'install.packages("coin",dependencies=TRUE)' \
-	&&Rscript -e 'install.packages("rpart",dependencies=TRUE)' \
-	&&Rscript -e 'install.packages("e1071",dependencies=TRUE)' \
-	&&Rscript -e 'install.packages("class",dependencies=TRUE)' \
-	&&Rscript -e 'install.packages("cluster",dependencies=TRUE)' \
-	&&Rscript -e 'install.packages("randomForest",dependencies=TRUE)' \
-	&&Rscript -e 'install.packages("DAAG",dependencies=TRUE)' \
-	&&Rscript -e 'install.packages("boot",dependencies=TRUE)' \
-
-## install devtools using R
-	&&Rscript -e 'install.packages("devtools")'
-
-## install additional R packages using R
-RUN > rscript.R \
-	&&echo 'source("https://bioconductor.org/biocLite.R")' >> rscript.R \
-	&&echo 'biocLite(ask=FALSE)' >> rscript.R \
-	#&&echo 'biocLite("BiocUpgrade")' >> rscript.R \
-	&&echo 'biocLite("Biobase",ask=FALSE)' >> rscript.R \
-	&&echo 'biocLite("LMGene",ask=FALSE)' >> rscript.R \
-	&&echo 'biocLite("pcaMethods",ask=FALSE)' >> rscript.R \
-	&&echo 'biocLite("ropls",ask=FALSE)' >> rscript.R \
-	&&echo 'biocLite("topGO",ask=FALSE)' >> rscript.R \
-	&&Rscript rscript.R
+RUN Rscript -e 'install.packages("dplyr",dependencies=TRUE)' \
+	&&Rscript -e 'install.packages("stringr",dependencies=TRUE)'
 
 
 ADD bwa /usr/bin/
