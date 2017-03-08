@@ -100,7 +100,7 @@ RUN apt-get update \
 
 RUN pip install --upgrade pyzmq PyDrive google-api-python-client jsonpointer jsonschema tornado sphinx pygments nose readline mistune invoke
 
-RUN pip install 'notebook==4.2'
+
 
 # Install julia 0.5
 RUN mkdir -p /opt/julia-0.5.0 && \
