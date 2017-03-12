@@ -1,128 +1,69 @@
 FROM ubuntu:14.04
 
-# Install.  http://dockerfile.github.io/#/ubuntu
-RUN \
-  sed -i 's/# \(.*multiverse$\)/\1/g' /etc/apt/sources.list && \
-  apt-get update && \
-  apt-get -y upgrade && \
-  apt-get install -y build-essential && \
-  apt-get install -y software-properties-common && \
-  apt-get install -y byobu curl git htop man unzip vim wget && \
-  rm -rf /var/lib/apt/lists/*
+RUN cp /etc/apt/sources.list /etc/apt/sources.list.bak
+RUN echo " \n\
+deb http://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse \n\
+deb http://mirrors.aliyun.com/ubuntu/ trusty-security main restricted universe multiverse \n\
+deb http://mirrors.aliyun.com/ubuntu/ trusty-updates main restricted universe multiverse \n\
+deb http://mirrors.aliyun.com/ubuntu/ trusty-proposed main restricted universe multiverse \n\
+deb http://mirrors.aliyun.com/ubuntu/ trusty-backports main restricted universe multiverse \n\
+deb-src http://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse \n\
+deb-src http://mirrors.aliyun.com/ubuntu/ trusty-security main restricted universe multiverse \n\
+deb-src http://mirrors.aliyun.com/ubuntu/ trusty-updates main restricted universe multiverse \n\
+deb-src http://mirrors.aliyun.com/ubuntu/ trusty-proposed main restricted universe multiverse \n\
+deb-src http://mirrors.aliyun.com/ubuntu/ trusty-backports main restricted universe multiverse \n\
+" >/etc/apt/sources.list
 
-# Add files.
-ADD root/.bashrc /root/.bashrc
-ADD root/.gitconfig /root/.gitconfig
-ADD root/.scripts /root/.scripts
+RUN apt-get update && apt-get install -y git vim curl wget ssh gcc make build-essential ca-certificates zlib1g-dev software-properties-common
 
-# Set environment variables.
-ENV HOME /root
-
-# Define working directory.
-WORKDIR /root
-
-
-# Install Java.  https://github.com/dockerfile/java/blob/master/openjdk-7-jdk/Dockerfile
-RUN \
-  apt-get update && \
-  apt-get install -y openjdk-7-jdk && \
-  rm -rf /var/lib/apt/lists/*
-
-# Define working directory.
-WORKDIR /data
-
-# Define commonly used JAVA_HOME variable
-ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64
-
-
-# Install python2.7  https://github.com/micktwomey/docker-python2.7/blob/master/Dockerfile
-RUN apt-get update \
-    && apt-get upgrade -y \
-    && apt-get install -y \
-    build-essential \
-    ca-certificates \
-    gcc \
-    git \
-    libpq-dev \
-    make \
-    python-pip \
-    python2.7 \
-    python2.7-dev \
-    ssh \
-    && apt-get autoremove \
-    && apt-get clean
-
-RUN pip install -U "setuptools==3.4.1"
-RUN pip install -U "pip==1.5.4"
-RUN pip install -U "Mercurial==2.9.1"
-RUN pip install -U "virtualenv==1.11.4"
-
-
-# https://github.com/tanmaykm/JuliaDockerImages/blob/master/base/v0.5/Dockerfile
-RUN apt-get update \
-    && apt-get upgrade -y -o Dpkg::Options::="--force-confdef" -o DPkg::Options::="--force-confold" \
-    && apt-get install -y \
-    man-db \
-    libc6 \
-    libc6-dev \
-    build-essential \
-    wget \
-    curl \
-    file \
-    vim \
-    screen \
-    tmux \
-    unzip \
-    pkg-config \
-    cmake \
-    gfortran \
-    gettext \
-    libreadline-dev \
-    libncurses-dev \
-    libpcre3-dev \
-    libgnutls28 \
-    libzmq3-dev \
-    libzmq3 \
-    python \
-    python-yaml \
-    python-m2crypto \
-    python-crypto \
-    msgpack-python \
-    python-dev \
-    python-setuptools \
-    supervisor \
-    python-jinja2 \
-    python-requests \
-    python-isodate \
-    python-git \
-    python-pip \
-    && apt-get clean
-
-RUN pip install --upgrade pyzmq PyDrive google-api-python-client jsonpointer jsonschema tornado sphinx pygments nose readline mistune invoke
-
-
-
-# Install julia 0.5
-RUN mkdir -p /opt/julia-0.5.0 && \
-    curl -s -L https://julialang.s3.amazonaws.com/bin/linux/x64/0.5/julia-0.5.0-linux-x86_64.tar.gz | tar -C /opt/julia-0.5.0 -x -z --strip-components=1 -f -
-RUN ln -fs /opt/julia-0.5.0 /opt/julia-0.5
-
-# Make v0.5 default julia
-RUN ln -fs /opt/julia-0.5.0 /opt/julia
-
-RUN echo "PATH=\"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/opt/julia/bin\"" > /etc/environment && \
-    echo "export PATH" >> /etc/environment && \
-    echo "source /etc/environment" >> /root/.bashrc
-
-RUN /opt/julia/bin/julia -e 'Pkg.add("IJulia")'
-RUN /opt/julia/bin/julia -e 'Pkg.build("IJulia")'
-
-
-RUN mkdir -p /tools/bwa
-ENV PATH /tools/bwa:$PATH
-
-
+# install python
+RUN apt-get install -y python-pip python2.7 python2.7-dev
 RUN pip install pysam
-ENTRYPOINT ["/usr/bin/python"]
+
+# install java
+RUN apt-get install -y openjdk-7-jdk
+ENV _JAVA_OPTIONS -Djava.io.tmpdir=/haplox/tmp
+
+# install R
+RUN echo "deb http://mirrors.ustc.edu.cn/CRAN/bin/linux/ubuntu trusty/" >>/etc/apt/sources.list
+RUN gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9
+RUN gpg -a --export E084DAB9 | sudo apt-key add -
+RUN apt-get update
+RUN apt-get -y install r-base
+RUN Rscript -e 'install.packages("dplyr", repos="http://mirrors.ustc.edu.cn/CRAN/")' \
+    && Rscript -e 'install.packages("stringr", repos="http://mirrors.ustc.edu.cn/CRAN/")' \
+    && Rscript -e 'install.packages("plotrix", repos="http://mirrors.ustc.edu.cn/CRAN/")'
+
+# install julia
+RUN add-apt-repository -y ppa:staticfloat/juliareleases
+RUN add-apt-repository -y ppa:staticfloat/julia-deps
+RUN apt-get update
+RUN apt-get install -y julia
 
 
+RUN apt-get autoremove \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+ADD bwa /usr/bin/
+
+
+RUN pip install future
+RUN apt-get update && apt-get upgrade -y
+RUN sudo apt-get install -y libfreetype6-dev
+RUN pip install cnvkit -i https://mirrors.aliyun.com/pypi/simple
+ADD cnvkit.py /usr/local/bin/cnvkit.py
+
+
+# install additional R packages using R
+RUN > rscript.R \
+    && echo 'source("https://bioconductor.org/biocLite.R")' >> rscript.R \
+    && echo 'biocLite(ask=FALSE)' >> rscript.R \
+    # &&echo 'biocLite("BiocUpgrade")' >> rscript.R \
+    && echo 'biocLite("DNAcopy",ask=FALSE)' >> rscript.R \
+    && Rscript rscript.R
+
+# Cleanup
+RUN rm rscript.R
+
+RUN Rscript -e 'install.packages("PSCBS", repos="http://mirrors.ustc.edu.cn/CRAN/")'
