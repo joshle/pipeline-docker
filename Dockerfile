@@ -67,3 +67,13 @@ RUN > rscript.R \
 RUN rm rscript.R
 
 RUN Rscript -e 'install.packages("PSCBS", repos="http://mirrors.ustc.edu.cn/CRAN/")'
+
+# install pypy
+RUN add-apt-repository ppa:pypy/ppa
+RUN apt-get update
+RUN apt-get install -y pypy pypy-dev
+
+ADD bedtools /usr/local/bin/
+ADD samtools /usr/local/bin/
+
+ENTRYPOINT ["/usr/bin/python"]
